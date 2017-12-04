@@ -1,31 +1,61 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Switch from 'material-ui/Toggle';
 import './App.css';
 
-function ToggleOn({ on, children }) {
+const TOGGLE_CONTEXT = "__toggle__";
+
+function ToggleOn({ children }, context) {
+  const { on } = context[TOGGLE_CONTEXT];
   return on ? children : null;
 }
 
-function ToggleOff({ on, children }) {
+ToggleOn.contextTypes = {
+  [TOGGLE_CONTEXT]: PropTypes.object.isRequired
+}
+
+function ToggleOff({ children }, context) {
+  const { on } = context[TOGGLE_CONTEXT];
   return on ? null : children;
 }
 
-function ToggleButton({ on, toggle, ...props }) {
+ToggleOff.contextTypes = {
+  [TOGGLE_CONTEXT]: PropTypes.object.isRequired
+};
+
+function ToggleButton(props, context) {
+  const { on, toggle } = context[TOGGLE_CONTEXT];
   return <Switch toggled={on} onClick={toggle} {...props} />;
 }
+
+ToggleButton.contextTypes = {
+  [TOGGLE_CONTEXT]: PropTypes.object.isRequired
+};
 
 class Toggle extends Component {
   static On = ToggleOn;
   static Off = ToggleOff;
   static Button = ToggleButton;
-
   static defaultProps = {
     onToggle: () => {}
   }
 
+  static childContextTypes = {
+    [TOGGLE_CONTEXT]: PropTypes.object.isRequired
+  };
+
   state = {
     on: false
+  }
+
+  getChildContext() {
+    return {
+      [TOGGLE_CONTEXT]: {
+        on: this.state.on,
+        toggle: this.toggle
+      }
+    }
   }
 
   toggle = () => {
@@ -35,16 +65,7 @@ class Toggle extends Component {
   };
 
   render() {
-    const children = React.Children.map(
-      this.props.children,
-      child => 
-        React.cloneElement(child, {
-          on: this.state.on,
-          toggle: this.toggle
-        })
-    );
-
-    return <div>{children}</div>;
+    return <div>{this.props.children}</div>;
   }
 }
 
@@ -54,7 +75,9 @@ class App extends Component {
       <MuiThemeProvider>
         <Toggle onToggle={on => console.log("toggle", on)}>
           <Toggle.On>The button is on</Toggle.On>
-          <Toggle.Button />
+          <div>
+            <Toggle.Button />
+          </div>
           <Toggle.Off>The button is off</Toggle.Off>
         </Toggle>
       </MuiThemeProvider>
