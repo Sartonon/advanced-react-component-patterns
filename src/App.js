@@ -28,9 +28,11 @@ class Toggle extends Component {
     on: false
   }
 
-  toggle = () => this.setState(({ on }) => ({ on: !on }), () => {
-    this.props.onToggle(this.state.on);
-  }); 
+  toggle = () => {
+    this.setState(({ on }) => ({ on: !on }), () => {
+      this.props.onToggle(this.state.on);
+    });
+  };
 
   render() {
     const children = React.Children.map(
